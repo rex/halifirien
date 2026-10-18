@@ -30,6 +30,13 @@ version bumps).
 
 ---
 
+## [0.3.1] — 2026-10-18 — Agent: Claude Opus 5.5
+### Changed
+- Docs: `topology_version` is homelab-inventory's 12-hex content hash of the topology (0.51.0),
+  not its VERSION, which changed on every inventory commit. TASK_STATE records the beacon
+  running in the ring in dry run (rex/halifirien#2 done): in-lab at
+  `halifirien.thelab.host/api/status`.
+
 ## [0.3.0] — 2026-10-18 — Agent: Claude Opus 5.5
 ### Changed
 - Edges are physical links from the inventory's cabling (ethernet, dac, usb,
