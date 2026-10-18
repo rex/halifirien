@@ -1,84 +1,77 @@
-# <project-name>
+# halifirien
 
-<One-paragraph description of what this project does.>
+> *"The beacons of Minas Tirith! The beacons are lit!"*
+> Halifirien was the last of them, the one on the border that called to Rohan.
+
+halifirien is the last beacon of my homelab. Every fifteen minutes it gathers what the lab
+knows about itself and sends one JSON document to the outside world. Nothing ever comes back
+in: the lab pushes outbound, so the public site never needs a path into the lab.
+
+```
+homelab-inventory ──make apply──► topology.json  (hosts, guests, VLANs, services, edges)
+                                       │  ConfigMap in the isengard RKE2 ring
+                                       ▼
+halifirien ── every 15 min ──────────────────────────────────────────────
+   Gatus ──────────── the latest probe result for every endpoint
+   VictoriaMetrics ── 90 days of daily uptime per probe
+   Alertmanager ───── firing warning and critical alerts
+   → build StatusDocument → JSON-Schema gate + secret scrubber (fail closed)
+   → PUT s3://<site>/status/status.json  ──►  piercemoore.com reads it
+```
+
+## What it publishes
+
+The whole shape of the lab, on purpose: host names, roles, hardware, platforms, addresses,
+VLANs, and which service runs where. Each node also carries its live **state**, its **checks**,
+its firing **alerts**, and its **uptime** history. The contract is
+[`schema/status.schema.json`](schema/status.schema.json), generated from `app/document.py`.
+Every object in it is closed (`additionalProperties: false`), so a field the models don't
+declare cannot be published.
+
+### State rules
+
+| State | Meaning |
+|---|---|
+| `ok` | It has probes, they all pass, and nothing is firing on it. |
+| `degraded` | Some probes fail, or a warning or critical alert is firing on it. |
+| `down` | Every probe fails. |
+| `unknown` | Nothing observes it. An honest grey is better than an invented green. |
+
+The **posture** is `outage` when any machine (host, VM, container, device) is down,
+`degraded` when anything is degraded or down, and `ok` otherwise.
+
+## What it refuses to publish
+
+Credentials. Before every PUT, the document must validate against the committed schema, and
+no string in it may look like a secret (1Password references, cloud access keys, private
+keys, tokens, `password=`-style pairs). If either check fails, nothing is published that cycle,
+and `/api/health` turns red once it has been two intervals without a good cycle.
+
+## Running it
+
+```sh
+make setup        # uv sync, .env from .env.example, typecheck
+make test         # pytest: sources, mapping, state rules, the gate, the loop, the routes
+make preview      # one dry-run cycle against the sources in .env; prints the document
+make dev          # the API on :8000 with the 15-minute loop (dry run by default)
+```
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/health` | 200 while cycles succeed; 503 with a reason when they don't |
+| `GET /api/status` | the last document, plus how the last cycle went (in-lab only) |
+| `POST /api/cycle` | run a cycle now |
+| `GET /api/docs` | OpenAPI UI |
+
+Publishing is off until `PUBLISH_ENABLED=true` and an `S3_BUCKET` are set. The IAM user
+behind the credentials can `PutObject` under `status/` and nothing else.
 
 ## Stack
 
-<Identify the stack: Python/FastAPI · Next.js App Router · React SPA
-on Vite · Go · etc. Cross-reference the relevant `lang-*` skill.>
+Python 3.13 · FastAPI · Pydantic v2 · httpx · boto3 · uv · ruff · mypy `--strict` · pytest.
+CI runs on the lab's Gitea pull mirror and pushes the image to the lab's registry. Flux rolls
+it out to the isengard ring.
 
-## Prerequisites
+## License
 
-- <runtime, e.g. Python 3.12+ via `uv`>
-- <package manager, e.g. `pnpm@9` via corepack>
-- <system deps, e.g. PostgreSQL, Docker>
-
-## Setup
-
-```sh
-make setup
-```
-
-Creates `.env` from `.env.example` (per `agentic-skeleton`'s `.env`
-standard) and installs dependencies. Edit `.env` after first run and
-fill in the required vars listed in `.env.example`.
-
-## Make targets
-
-`make help` shows the full list with grouped descriptions. Quick
-reference:
-
-- `make dev` — start the dev server.
-- `make test` — run tests.
-- `make validate` — lint + typecheck + architecture + version-bump gate.
-- `make build` — production build.
-- `make help-stack` — see which `lang-*` skill fills in the stub
-  recipes for this stack.
-
-## Env vars
-
-See `.env.example` for the complete list. Key vars:
-
-- `DATABASE_URL` — Postgres connection string (per `agentic-skeleton`
-  database default).
-- <add stack-specific vars during scaffolding>
-
-## API docs
-
-For HTTP services (per `agentic-skeleton`'s `/api/*` contract):
-
-- `/api/health` — liveness probe.
-- `/api/docs` — interactive API documentation.
-- `/api/openapi` — OpenAPI 3.x JSON spec.
-
-## Architecture overview
-
-<One paragraph naming the layers: routes → services → models →
-adapters. For more detail, see `AGENTS.md`.>
-
-## Dev workflow
-
-1. Branch from `main`: `git checkout -b feat/<slice-name>`.
-2. Iterate; commit at logical-step boundaries (per `agentic-skeleton`
-   git discipline).
-3. `make validate` (or rely on `auto-commit.sh` to gate it).
-4. Push (auto-pushed via `.git/hooks/post-commit`); open PR.
-
-## Testing
-
-<Whether testing is enabled or explicitly deferred. Echo
-`VIBE.yaml::quality_gates.tests.mode`.>
-
-## Repo policy
-
-Machine-readable in `VIBE.yaml`. Schema:
-`agentic-skeleton/references/vibe-yaml-schema.md`.
-
-## See also
-
-- `AGENTS.md` — agent-collaboration container.
-- `TASK_STATE.md` — current slice + standing user directives.
-- `CHANGELOG.md` — versioned change log (Keep a Changelog format).
-- `docs/_templates/module-README.md` — template for per-module READMEs
-  inside this project.
-- `docs/adr/` — architecture decision records.
+MIT

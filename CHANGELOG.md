@@ -30,6 +30,28 @@ version bumps).
 
 ---
 
+## [0.2.0] — 2026-10-18 — Agent: Claude Opus 5.5
+### Added
+- The beacon (rex/halifirien#2). It merges the inventory-rendered topology
+  with Gatus (latest checks), VictoriaMetrics (90 days of daily uptime) and
+  Alertmanager (firing warning/critical) into one StatusDocument, every 15
+  minutes. A source that fails leaves its nodes `unknown`; it never stops the
+  cycle.
+- The public contract: `app/document.py` and the generated
+  `schema/status.schema.json` (closed objects). `make schema` writes it;
+  `make typecheck` fails on drift.
+- A fail-closed gate (`app/guard.py`): schema validation plus secret
+  patterns. A refused document is never published.
+- Publishers: dry run (default) or S3 PutObject to `status/status.json` with
+  Cache-Control, when `PUBLISH_ENABLED=true`.
+- `/api/health` (503 after two intervals without a good cycle),
+  `/api/status` (in-lab preview: last document, source errors, orphan checks),
+  `/api/cycle`, and `/api/docs`.
+- Dockerfile (non-root, uv, HEALTHCHECK), Gitea Actions CI on the pull mirror
+  (validate, test, then push the image), a full-history gitleaks workflow for
+  the public repo, the MIT license and a README.
+- 24 tests: sources, mapping, state rules, the gate, the loop, the routes, S3.
+
 ## [0.1.0] — 2026-10-18 — Agent: Claude Opus 5.5
 ### Added
 - Scaffold from `agentic-skeleton` (`/scaffold`): AGENTS.md, VIBE.yaml with

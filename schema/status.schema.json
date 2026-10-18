@@ -1,0 +1,534 @@
+{
+  "$defs": {
+    "Alert": {
+      "additionalProperties": false,
+      "description": "One firing warning or critical alert.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "warning"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "since": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Since"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Summary"
+        }
+      },
+      "required": [
+        "name",
+        "severity",
+        "since",
+        "summary"
+      ],
+      "title": "Alert",
+      "type": "object"
+    },
+    "Check": {
+      "additionalProperties": false,
+      "description": "One health probe attached to a node.",
+      "properties": {
+        "checked_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Checked At"
+        },
+        "group": {
+          "title": "Group",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "ok": {
+          "title": "Ok",
+          "type": "boolean"
+        },
+        "response_ms": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Response Ms"
+        }
+      },
+      "required": [
+        "name",
+        "group",
+        "ok",
+        "checked_at",
+        "response_ms"
+      ],
+      "title": "Check",
+      "type": "object"
+    },
+    "Edge": {
+      "additionalProperties": false,
+      "description": "A directed relationship worth drawing.",
+      "properties": {
+        "flow": {
+          "title": "Flow",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "target",
+        "flow"
+      ],
+      "title": "Edge",
+      "type": "object"
+    },
+    "Network": {
+      "additionalProperties": false,
+      "description": "One VLAN and its subnet.",
+      "properties": {
+        "cidr": {
+          "title": "Cidr",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "purpose": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Purpose"
+        },
+        "vlan": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Vlan"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "cidr",
+        "vlan",
+        "purpose"
+      ],
+      "title": "Network",
+      "type": "object"
+    },
+    "Node": {
+      "additionalProperties": false,
+      "description": "A host, guest, device, or service, with its live state.",
+      "properties": {
+        "addresses": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Addresses",
+          "type": "array"
+        },
+        "alerts": {
+          "items": {
+            "$ref": "#/$defs/Alert"
+          },
+          "title": "Alerts",
+          "type": "array"
+        },
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/Check"
+          },
+          "title": "Checks",
+          "type": "array"
+        },
+        "fqdns": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Fqdns",
+          "type": "array"
+        },
+        "hardware": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Hardware",
+          "type": "object"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "incident": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "A /postmortems slug, when one explains the state",
+          "title": "Incident"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Parent"
+        },
+        "platform": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Platform"
+        },
+        "roles": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Roles",
+          "type": "array"
+        },
+        "state": {
+          "enum": [
+            "ok",
+            "degraded",
+            "down",
+            "unknown"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Summary"
+        },
+        "uptime": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Uptime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vlan": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Vlan"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "parent",
+        "roles",
+        "summary",
+        "platform",
+        "hardware",
+        "addresses",
+        "vlan",
+        "fqdns",
+        "state",
+        "checks",
+        "alerts",
+        "uptime",
+        "incident"
+      ],
+      "title": "Node",
+      "type": "object"
+    },
+    "Summary": {
+      "additionalProperties": false,
+      "description": "Counts the page can show without walking the node list.",
+      "properties": {
+        "alerts_firing": {
+          "title": "Alerts Firing",
+          "type": "integer"
+        },
+        "degraded": {
+          "title": "Degraded",
+          "type": "integer"
+        },
+        "down": {
+          "title": "Down",
+          "type": "integer"
+        },
+        "nodes": {
+          "title": "Nodes",
+          "type": "integer"
+        },
+        "ok": {
+          "title": "Ok",
+          "type": "integer"
+        },
+        "unknown": {
+          "title": "Unknown",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "nodes",
+        "ok",
+        "degraded",
+        "down",
+        "unknown",
+        "alerts_firing"
+      ],
+      "title": "Summary",
+      "type": "object"
+    },
+    "Uptime": {
+      "additionalProperties": false,
+      "description": "Daily success ratios from the node's probes, oldest first.",
+      "properties": {
+        "daily": {
+          "items": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Daily",
+          "type": "array"
+        },
+        "days": {
+          "title": "Days",
+          "type": "integer"
+        },
+        "ratio_30d": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Ratio 30D"
+        },
+        "ratio_90d": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Ratio 90D"
+        }
+      },
+      "required": [
+        "days",
+        "daily",
+        "ratio_30d",
+        "ratio_90d"
+      ],
+      "title": "Uptime",
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/rex/halifirien/blob/main/schema/status.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The whole document, published as status/status.json.",
+  "properties": {
+    "beacon_version": {
+      "title": "Beacon Version",
+      "type": "string"
+    },
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/Edge"
+      },
+      "title": "Edges",
+      "type": "array"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "networks": {
+      "items": {
+        "$ref": "#/$defs/Network"
+      },
+      "title": "Networks",
+      "type": "array"
+    },
+    "next_expected_at": {
+      "format": "date-time",
+      "title": "Next Expected At",
+      "type": "string"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/Node"
+      },
+      "title": "Nodes",
+      "type": "array"
+    },
+    "posture": {
+      "enum": [
+        "ok",
+        "degraded",
+        "outage"
+      ],
+      "title": "Posture",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "summary": {
+      "$ref": "#/$defs/Summary"
+    },
+    "topology_generated_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Topology Generated At"
+    },
+    "unattached_alerts": {
+      "items": {
+        "$ref": "#/$defs/Alert"
+      },
+      "title": "Unattached Alerts",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "generated_at",
+    "next_expected_at",
+    "beacon_version",
+    "topology_generated_at",
+    "posture",
+    "summary",
+    "networks",
+    "nodes",
+    "edges",
+    "unattached_alerts"
+  ],
+  "title": "StatusDocument",
+  "type": "object"
+}

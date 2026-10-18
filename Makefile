@@ -7,7 +7,7 @@
 # Run `make help` for a full list of available targets.
 
 .PHONY: help help-stack install env env-check setup validate update info \
-        dev build start lint typecheck check-architecture check-docs \
+        dev build start schema preview lint typecheck check-architecture check-docs \
         check-precommit check-skeleton sync-skeleton check-skills stamp-skill fix test \
         bump-patch bump-minor bump-major check-version-bumped version \
         clean clean-all \
@@ -23,7 +23,7 @@
 # POSIX-compatible — no `[[ ]]`, no `${var//foo/bar}` substitution, no
 # zsh globbing — so /bin/bash works as a true fallback.
 SHELL       := $(or $(wildcard /opt/homebrew/bin/zsh),$(shell command -v zsh),/bin/bash)
-APP_NAME    ?= <project-name>
+APP_NAME    ?= halifirien
 PORT        ?= 8000
 NODE_ENV    ?= development
 DOCKER_IMAGE := $(APP_NAME):latest
@@ -59,6 +59,8 @@ help:
 	@echo "  $(GREEN)make check-architecture$(RESET)   Run repo-native architecture checks"
 	@echo "  $(GREEN)make fix$(RESET)                  Auto-fix lint issues"
 	@echo "  $(GREEN)make test$(RESET)                 Run tests (when testing is enabled)"
+	@echo "  $(GREEN)make schema$(RESET)               Regenerate schema/status.schema.json"
+	@echo "  $(GREEN)make preview$(RESET)              One dry-run cycle; print the document"
 	@echo "  $(GREEN)make validate$(RESET)             Run aggregate validation: lint + typecheck + architecture + version-gate"
 	@echo "  $(GREEN)make check-skills$(RESET)         Advisory: applied-skill provenance + drift (never fails)"
 	@echo "  $(GREEN)make stamp-skill$(RESET)          Record an applied skill: SKILL=<id> [VERSION=x.y.z]"
@@ -94,7 +96,7 @@ help:
 ## install: Install dependencies (stack-specific — lang-* skill extends this)
 install:
 	@echo "$(CYAN)Installing dependencies...$(RESET)"
-	@echo "$(YELLOW)  (stub — overlay a lang-* skill to fill this in; run 'make help-stack')$(RESET)"
+	@uv sync --frozen
 	@echo "$(GREEN)Done.$(RESET)"
 
 ## env: Create .env from template if missing
@@ -158,34 +160,37 @@ version:
 
 ## dev: Start development server (stack-specific)
 dev:
-	@echo "$(CYAN)Starting dev server on port $(PORT)...$(RESET)"
-	@echo "$(YELLOW)  (stub — overlay a lang-* skill to fill this in; run 'make help-stack')$(RESET)"
+	@echo "$(CYAN)Starting dev server on port $(PORT) (dry run unless .env says otherwise)...$(RESET)"
+	@uv run uvicorn app.main:app --reload --port $(PORT)
 
-## build: Build production bundle (stack-specific)
-build:
-	@echo "$(CYAN)Building...$(RESET)"
-	@echo "$(YELLOW)  (stub — overlay a lang-* skill to fill this in; run 'make help-stack')$(RESET)"
+## build: Build the production image (the ring runs images only)
+build: docker-build
 
 ## start: Start production server
 start:
 	@echo "$(CYAN)Starting production server on port $(PORT)...$(RESET)"
-	@echo "$(YELLOW)  (stub — overlay a lang-* skill to fill this in; run 'make help-stack')$(RESET)"
+	@uv run uvicorn app.main:app --host 0.0.0.0 --port $(PORT)
 
-## lint: Run linter (stack-specific — fails closed until a lang-* skill overlays it)
+## schema: Regenerate schema/status.schema.json from the public models
+schema:
+	@uv run python -m app.cli schema
+	@echo "$(GREEN)schema/status.schema.json written.$(RESET)"
+
+## preview: One dry-run cycle against the sources in .env; prints the document
+preview:
+	@uv run python -m app.cli preview
+
+## lint: ruff check + ruff format --check
 lint:
 	@echo "$(CYAN)Running linter...$(RESET)"
-	@echo "$(RED)  lint is NOT configured — no linter is wired for this repo.$(RESET)"
-	@echo "$(RED)  Overlay the lang-* skill for this stack (see: make help-stack).$(RESET)"
-	@echo "$(RED)  A gate that does not run is a failure, not a pass.$(RESET)"
-	@exit 1
+	@uv run ruff check app tests
+	@uv run ruff format --check app tests
 
-## typecheck: Run type checker (stack-specific — fails closed until a lang-* skill overlays it)
+## typecheck: mypy --strict, plus the committed schema must match the models
 typecheck:
 	@echo "$(CYAN)Running type checker...$(RESET)"
-	@echo "$(RED)  typecheck is NOT configured — no type checker is wired.$(RESET)"
-	@echo "$(RED)  Overlay the lang-* skill for this stack (see: make help-stack).$(RESET)"
-	@echo "$(RED)  A gate that does not run is a failure, not a pass.$(RESET)"
-	@exit 1
+	@uv run mypy app tests
+	@uv run python -m app.cli schema --check
 
 ## check-architecture: Enforce VIBE.yaml line limits + module shape (fails closed)
 check-architecture:
@@ -211,7 +216,8 @@ check-architecture:
 ## fix: Auto-fix lint issues (stack-specific)
 fix:
 	@echo "$(CYAN)Auto-fixing...$(RESET)"
-	@echo "$(YELLOW)  (stub — overlay a lang-* skill to fill this in; run 'make help-stack')$(RESET)"
+	@uv run ruff check --fix app tests
+	@uv run ruff format app tests
 
 ## test: Run tests — VIBE.yaml quality_gates.tests.mode decides (fails closed when required)
 test:
@@ -221,9 +227,7 @@ test:
 		|| MODE=unknown; \
 	case "$$MODE" in \
 		required) \
-			echo "$(RED)  tests.mode='required' but no test runner is wired —$(RESET)"; \
-			echo "$(RED)  overlay a lang-* skill (make help-stack). Failing closed.$(RESET)"; \
-			exit 1 ;; \
+			uv run pytest -q ;; \
 		deferred|not_applicable) \
 			echo "$(YELLOW)  tests.mode='$$MODE' — tests not run, NOT claimed as passing.$(RESET)" ;; \
 		*) \
@@ -238,8 +242,8 @@ test:
 docker-build:
 	@echo "$(CYAN)Building Docker image $(DOCKER_IMAGE)...$(RESET)"
 	docker build \
-		--build-arg APP_VERSION=$$(git describe --tags --always 2>/dev/null || echo "dev") \
-		--build-arg GITHUB_SHA=$$(git rev-parse HEAD 2>/dev/null || echo "unknown") \
+		--build-arg APP_VERSION=$$(tr -d '[:space:]' < VERSION) \
+		--build-arg GIT_COMMIT=$$(git rev-parse --short HEAD 2>/dev/null || echo "unknown") \
 		--build-arg BUILD_DATE=$$(date -u +%Y-%m-%dT%H:%M:%SZ) \
 		-t $(DOCKER_IMAGE) .
 

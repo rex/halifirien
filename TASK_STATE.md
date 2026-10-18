@@ -1,75 +1,52 @@
-# TASK_STATE — <feature-name>
+# TASK_STATE — halifirien v1
 
-> Source of truth for in-flight work. Humans and agents both write here.
-> This file is **committed** to the repo. It survives sessions, machines,
-> and context compactions.
+> Source of truth for in-flight work. Committed; survives sessions and compactions.
 >
-> Spec: `specs/<slug>/spec.md` · Plan: `specs/<slug>/plan.md`
-> Branch: `<branch>` · Owner (human): @<user> · Last update: <date> by <agent>
+> Rivendell: rex/halifirien#1 (parent, under rex/homepage#16) · #2 service ·
+> rex/homelab-inventory#47 topology + stack · rex/homepage#17 publish leg.
+> Branch: `main` (trunk) · Owner: Pierce · Last update: 2026-10-18 by Claude Opus 5.5
 
 ## 0. TL;DR for a fresh agent session
 
-<2–4 sentences. What phase are we in, what's the next action, what NOT to touch.>
-
-Example:
-> We are mid-Phase 2 of adding `/api/health` to billing-service. Phase 1
-> (contract+schema) is done and merged to branch. **Next action: pick up
-> Slice 2.2** — Redis probe with timeout. Do NOT touch
-> `app/health/contracts.py` (frozen Phase 1).
+The service is built and tested (v0.2.0): sources, mapping, state rules, fail-closed gate,
+dry-run/S3 publishers, loop, routes, Dockerfile, Gitea CI. **Next:** homelab-inventory#47,
+which renders `topology.json` and declares the ring stack (dry run). Then confirm the Gitea
+pull mirror builds the image and Flux runs the pod. Publishing (homepage#17) waits on Pierce
+minting the IAM key.
 
 ## Standing user directives
 
-<!-- Record durable per-task user directives here. "Continue until blocked",
-     "do not wait for my input unless blocked", "skip tests for this slice"
-     — anything Pierce said that should survive compaction. -->
-
-- (none currently)
+- Push only; never an inbound path from the internet (VIBE D1).
+- Full disclosure of topology, including names, roles, hardware, addressing and VLANs (D2).
+- 15-minute cadence. The website's /homelab page is on standby (rex/homepage#16).
 
 ## 1. Phases
 
 | # | Phase | Status | Exit criteria |
 |---|---|---|---|
-| 1 | <phase name> | ⏸ pending | <what's true when this phase is done> |
-| 2 | <phase name> | ⏸ pending | <...> |
-
-Statuses: `⏸ pending` · `🟡 in-prog` · `✅ done` · `🔴 blocked`
-
-## 2. Slices (vertical, atomic, independently mergeable)
-
-### Slice 1.1 — <imperative title>
-
-- Status: ⏸ pending
-- Owner: <agent or human>
-- Files (planned edits): `<path>`, `<path>`
-- Files (do NOT edit): `<path>`
-- Depends on: (none) | Slice X.Y
-- Acceptance (EARS notation):
-  - [ ] When <trigger>, the system shall <behavior>.
-  - [ ] While <state>, the system shall <constraint>.
-  - [ ] If <event>, then the system shall <response>.
-  - [ ] Tests: <test names>
-  - [ ] Lint + typecheck green
-
-### Slice 1.2 — <next>
-
-- Status: ⏸ pending
-- Files (planned edits): ...
+| 1 | Service | ✅ done | gates green; image builds on the mirror |
+| 2 | Topology + stack | ⏸ pending | renderer in inventory; pod runs in the ring in dry run |
+| 3 | Publish | ⏸ pending | IAM writer, deploy.yml exclude, key in 1Password, PUBLISH_ENABLED |
 
 ## 3. Blockers / open questions
 
-- (none yet)
+- The access key for the S3 writer is Pierce's to mint (agents never see the value).
 
 ## 4. Recent decisions (append-only, newest first)
 
-- <date> — <decision> (<who decided>, <context>)
+- 2026-10-18 — Check→node mapping order: declared key, then hostname, then name; alerts on
+  target/namespace/job/kubernetes_io_hostname/host/instance (agent; documented in app/attach.py).
+- 2026-10-18 — VIBE D1–D5 (push only, full disclosure, public repo, loop not CronJob, tests).
 
 ## 5. Next actions (ordered)
 
-1. <immediate next action>
-2. <then>
-3. <then>
+1. homelab-inventory: `tools/render_halifirien_topology.py`, a `halifirien-topology`
+   config source, `stacks/halifirien.yml`; commit and push the rex/isengard output.
+2. Confirm the Gitea pull mirror exists and its CI pushed `rex/halifirien:latest`.
+3. `GET https://halifirien.thelab.host/api/status`: review orphan checks and unknowns with Pierce.
+4. rex/homepage#17: the publish leg.
 
-## 6. Handoff note (fill when ending a session)
+## 6. Handoff note
 
-<Last session>: <what was accomplished, what's half-finished, where to
-resume. Specific files + failing tests if applicable.>
+2026-10-18: scaffold, onboarding to Rivendell (github-estate 0.23.0) and the service v0.2.0
+landed in one session. Nothing is deployed yet.
