@@ -1,0 +1,23 @@
+# Tooling
+.task_state_history/
+.DS_Store
+
+# Secrets — never committed. `.env.example` is the documented template.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local preview output (make preview)
+/out/
