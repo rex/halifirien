@@ -63,8 +63,11 @@ make dev          # the API on :8000 with the 15-minute loop (dry run by default
 | `POST /api/cycle` | run a cycle now |
 | `GET /api/docs` | OpenAPI UI |
 
-Publishing is off until `PUBLISH_ENABLED=true` and an `S3_BUCKET` are set. The IAM user
-behind the credentials can `PutObject` under `status/` and nothing else.
+Publishing is off by default and on in the lab: the live document is
+**<https://piercemoore.com/status/status.json>**, refreshed every 15 minutes. Locally it stays a
+dry run until `PUBLISH_ENABLED=true` and an `S3_BUCKET` are set. The IAM user behind the
+credentials can `PutObject` under `status/` and nothing else, and the site's own deploys
+exclude `status/` from their `--delete` sync.
 
 ## Stack
 

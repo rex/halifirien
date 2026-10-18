@@ -30,6 +30,14 @@ version bumps).
 
 ---
 
+## [0.3.2] — 2026-10-18 — Agent: Claude Opus 5.5
+### Changed
+- Docs: publishing is live (rex/homepage#17). The lab's beacon PUTs
+  https://piercemoore.com/status/status.json every 15 minutes. It runs as the IAM user
+  `halifirien-status-writer` (PutObject on `status/*` only), with a key minted straight into
+  1Password. The first public document went out at 2026-10-18 20:19 UTC; a full site deploy
+  afterwards left it untouched (same ETag).
+
 ## [0.3.1] — 2026-10-18 — Agent: Claude Opus 5.5
 ### Changed
 - Docs: `topology_version` is homelab-inventory's 12-hex content hash of the topology (0.51.0),
