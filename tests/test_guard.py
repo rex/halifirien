@@ -43,6 +43,14 @@ def test_a_clean_document_renders_compact_json() -> None:
     payload = json.loads(body)
     assert payload["posture"] == "degraded"
     assert payload["nodes"][0]["alerts"][0]["summary"] == "pool2 DEGRADED"
+    assert payload["topology_version"] == "0.49.0"
+    assert payload["edges"][0] == {
+        "source": "erebor",
+        "target": "dale",
+        "flow": "dac",
+        "speed_mbps": 10_000,
+    }
+    assert payload["edges"][1]["speed_mbps"] is None
     assert "future_field" not in body.decode()
 
 

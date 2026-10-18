@@ -47,21 +47,21 @@ class TopologyNode(BaseModel):
 
 
 class TopologyEdge(BaseModel):
-    """A directed relationship worth drawing: data, deploy, dns, backup, telemetry."""
+    """A physical link worth drawing (ethernet, dac, usb, power), from the inventory's cabling."""
 
     model_config = ConfigDict(extra="ignore", frozen=True)
 
     source: str
     target: str
     flow: str
+    speed_mbps: int | None = None
 
 
 class Topology(BaseModel):
-    """The whole rendered inventory projection."""
+    """The whole rendered inventory projection. Deterministic: versioned, never timestamped."""
 
     model_config = ConfigDict(extra="ignore", frozen=True)
 
-    generated_at: str | None = None
     source_version: str | None = None
     networks: list[TopologyNetwork] = Field(default_factory=list)
     nodes: list[TopologyNode] = Field(default_factory=list)

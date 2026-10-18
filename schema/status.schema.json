@@ -101,7 +101,7 @@
     },
     "Edge": {
       "additionalProperties": false,
-      "description": "A directed relationship worth drawing.",
+      "description": "A physical link: ethernet, dac, usb or power, with its speed when it has one.",
       "properties": {
         "flow": {
           "title": "Flow",
@@ -111,6 +111,17 @@
           "title": "Source",
           "type": "string"
         },
+        "speed_mbps": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Speed Mbps"
+        },
         "target": {
           "title": "Target",
           "type": "string"
@@ -119,7 +130,8 @@
       "required": [
         "source",
         "target",
-        "flow"
+        "flow",
+        "speed_mbps"
       ],
       "title": "Edge",
       "type": "object"
@@ -497,7 +509,7 @@
     "summary": {
       "$ref": "#/$defs/Summary"
     },
-    "topology_generated_at": {
+    "topology_version": {
       "anyOf": [
         {
           "type": "string"
@@ -506,7 +518,7 @@
           "type": "null"
         }
       ],
-      "title": "Topology Generated At"
+      "title": "Topology Version"
     },
     "unattached_alerts": {
       "items": {
@@ -521,7 +533,7 @@
     "generated_at",
     "next_expected_at",
     "beacon_version",
-    "topology_generated_at",
+    "topology_version",
     "posture",
     "summary",
     "networks",

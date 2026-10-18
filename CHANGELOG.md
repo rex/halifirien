@@ -30,6 +30,17 @@ version bumps).
 
 ---
 
+## [0.3.0] — 2026-10-18 — Agent: Claude Opus 5.5
+### Changed
+- Edges are physical links from the inventory's cabling (ethernet, dac, usb,
+  power) and carry `speed_mbps`.
+- `topology_generated_at` is now `topology_version` (the inventory's
+  VERSION). The rendered topology is deterministic, so an unchanged inventory
+  never rolls the pod.
+- First live dry run against the lab (homelab-inventory 0.49.0 topology):
+  69 nodes, 22 links, posture `degraded` (minas-tirith pool2), 40 ok with 19
+  days of uptime, 27 unknown, 11 orphan probes, 52 KB.
+
 ## [0.2.0] — 2026-10-18 — Agent: Claude Opus 5.5
 ### Added
 - The beacon (rex/halifirien#2). It merges the inventory-rendered topology

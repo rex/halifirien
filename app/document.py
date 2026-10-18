@@ -85,11 +85,12 @@ class Network(_Public):
 
 
 class Edge(_Public):
-    """A directed relationship worth drawing."""
+    """A physical link: ethernet, dac, usb or power, with its speed when it has one."""
 
     source: str
     target: str
     flow: str
+    speed_mbps: int | None
 
 
 class Summary(_Public):
@@ -110,7 +111,7 @@ class StatusDocument(_Public):
     generated_at: datetime
     next_expected_at: datetime
     beacon_version: str
-    topology_generated_at: str | None
+    topology_version: str | None
     posture: Posture
     summary: Summary
     networks: list[Network]

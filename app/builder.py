@@ -109,7 +109,7 @@ def build_document(topology: Topology, live: LiveInputs, ctx: BuildContext) -> S
         generated_at=ctx.now,
         next_expected_at=ctx.now + ctx.interval,
         beacon_version=ctx.version,
-        topology_generated_at=topology.generated_at,
+        topology_version=topology.source_version,
         posture=posture([(node.kind, node.state) for node in nodes]),
         summary=Summary(
             nodes=len(nodes),

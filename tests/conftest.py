@@ -15,8 +15,7 @@ METRICS = "http://metrics.test"
 ALERTMANAGER = "http://alertmanager.test"
 
 TOPOLOGY: dict[str, Any] = {
-    "generated_at": "2026-10-18T12:00:00Z",
-    "source_version": "0.0.0",
+    "source_version": "0.49.0",
     "networks": [
         {"id": "lan", "name": "LAN", "cidr": "10.9.0.0/24", "vlan": 1, "purpose": "hosts"},
         {"id": "ring", "name": "Ring", "cidr": "10.9.30.0/24", "vlan": 30, "purpose": None},
@@ -53,7 +52,10 @@ TOPOLOGY: dict[str, Any] = {
         },
         {"id": "esgaroth", "name": "esgaroth", "kind": "lxc", "parent": "erebor"},
     ],
-    "edges": [{"source": "ravenhill", "target": "dale", "flow": "data"}],
+    "edges": [
+        {"source": "erebor", "target": "dale", "flow": "dac", "speed_mbps": 10_000},
+        {"source": "erebor", "target": "esgaroth", "flow": "power"},
+    ],
 }
 
 
