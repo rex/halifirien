@@ -30,6 +30,10 @@ version bumps).
 
 ---
 
+## [0.4.0] — 2026-11-17 — Agent: Claude Opus 5.5
+### Changed
+- Adopt agentic-skeleton 0.56.0's include-based Makefile: the gates live in the skeleton-owned make/agentic-skeleton.mk and the Makefile keeps this repo's own recipes, so make check-skeleton stops failing on them. Verified against make's rule database; repo targets, variables and the default goal are unchanged.
+
 ## [0.3.2] — 2026-10-18 — Agent: Claude Opus 5.5
 ### Changed
 - Docs: publishing is live (rex/homepage#17). The lab's beacon PUTs
